@@ -1,0 +1,231 @@
+---
+title: "Case of Study for Seedstar Internship"
+author: "Rodrigo Taira"
+date: "27 November 2018"
+output:
+  beamer_presentation: default
+  ioslides_presentation: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Outline
+
+- Introduction
+- Problem Assignment and Questions
+- Acquire Data 
+- Process of the data for analysis
+- Exploration of the data
+- Prediction Model 
+- Results
+- Bibliography
+- Github of the Project 
+
+
+## Introduction 
+- This is a presentation of a case of study given as an assignment for the Seedstar Data Scientist Internship Position.
+- To implement the case of study, it was used R programming language as main tool for data analysis. 
+- Most part of the graphs were implemented using ggplot2 library. 
+
+## Problem Assignment and Questions
+
+- A dataset was provided by this link: https://docs.google.com/spreadsheets/d/1YT0-PTttD-k1y8KHXwfHm5rkfOucIj-eGLvSiFOCchY/edit#gid=0
+- In a brief view,  it can be perceived that the data provided is about loans status from customers.  
+- It was asked to analyze this dataset and create a model to predict the 'label' index. That has just two possible values either '0' and '1'.  
+- Some of the details that were very useful to get some insights were Education_Status, Gender, No_Children and Amount.
+- How the Label Status is distributed considering Education Status, Reason, Number of Children and etc? 
+
+## Acquire Data 
+
+- First step was to retrieve the data from the link with the gsheet library. 
+- After a quick look, I got the summary of the data to check all the data types.
+- It was organised the data types of each column and check which type suits better to the context for a better analysis of the data.
+
+```{r echo = TRUE}
+library(gsheet)
+dataset <- gsheet2tbl('https://docs.google.com/spreadsheets/d/1YT0-PTttD-k1y8KHXwfHm5rkfOucIj-eGLvSiFOCchY/edit#gid=0')
+dataset$Education_Status <- as.factor(dataset$Education_Status)
+dataset$Amount <- as.numeric(dataset$Amount)
+dataset$Gender <- as.factor(dataset$Gender)
+dataset$Reason <- as.factor(dataset$Reason)
+dataset$label <- as.factor(dataset$label)
+dataset$Reason <- as.factor(dataset$Reason)
+dataset$referrals <- as.factor(dataset$referrals)
+dataset$Name <- as.character(dataset$Name)
+dataset$No_Children <- as.factor(dataset$No_Children)
+dataset_no_na <- na.omit(dataset)
+dataset_with_na <- dataset[!complete.cases(dataset),]
+```
+
+## 
+- Plot to check how the 'label' is distributed among the Customers. 
+
+```{r}
+
+barplot(table(dataset$label), xlab = "Label", ylab = "Total of Customers", main = "Barplot of the Total Customers per Label")
+```
+
+## Process of the data for analysis
+- The probability of label be '1' is higher for females with better education. 
+```{r}
+library(ggplot2)
+ggplot(dataset, aes(x = Education_Status, fill = factor(label))) + facet_wrap(~Gender) +  stat_count(width = 0.5) + xlab("Education Status") + ylab("Total of Customers") + labs(fill="label") + ggtitle('Barplot of the Total of Customers per Education Status by Gender')
+```
+
+##
+- The probability of label be '1' is higher for females with less or no Children. 
+
+```{r}
+ggplot(dataset, aes(x = No_Children, fill = label)) + geom_bar() + facet_wrap(~Gender) + xlab("Number of Children") + ylab("Total of Customers") + ggtitle('Barplot of the Total Customers per number of children by Gender')
+
+ggplot(dataset, aes(x = Reason, fill = label)) + geom_bar() + facet_wrap(~Gender) + xlab("Reason") + ylab("Total of Customers") + ggtitle('Barplot of the Total Customers per Reason by Gender')
+```
+
+## 
+
+- It is perceveid that the median of the loan amount of the males with label equal '0' is almost 150
+```{r}
+
+ggplot(dataset, aes(x = label, y = Amount)) + geom_boxplot() + ggtitle("Boxplot of the Amount per Label Status by Gender") + facet_wrap(~Gender) + scale_y_continuous(limits = c(0,250)) 
+
+```
+
+## Exploration of the data
+- After some process on the data, it is good to explore more by subsetting the data to get more insights.  
+
+```{r}
+
+ males_label_1 <- dataset[which(dataset$Gender == "male" & dataset$label == 1),]
+ males_label_0 <- dataset[which(dataset$Gender == 'male' & dataset$label == 0),]
+ females_label_1 <- dataset[which(dataset$Gender == 'female' & dataset$label == 1), ]
+ females_label_0 <- dataset[which(dataset$Gender == 'female' & dataset$label == 0), ]
+
+ggplot(males_label_1, aes(x = Education_Status)) +  stat_count(width = 0.5) + xlab("Education Status") + ylab("Total of Males with Label 1") + labs(fill="label")  + ggtitle("Barplot of the Total Male with Label equals '1' per Education Status by Reason") + facet_wrap(~Reason)
+
+```
+
+##
+
+```{r}
+ggplot(males_label_0, aes(x = Education_Status)) +  stat_count(width = 0.5) + xlab("Education Status") + ylab("Total of Males with Label 0")  + ggtitle("Barplot of the Total Male with Label equals '0' per Education Status by Reason") + facet_wrap(~Reason)
+```
+
+##
+
+```{r}
+
+ggplot(females_label_1, aes(x = Education_Status)) +  stat_count(width = 0.5) + xlab("Education Status") + ylab("Total of Females with Label 1") + labs(fill="label")  + ggtitle("Barplot of the Total Females with Label equals '1' per Education Status by Reason") + facet_wrap(~Reason)
+
+```
+
+##
+
+```{r}
+ggplot(females_label_1, aes(x = Education_Status)) +  stat_count(width = 0.5) + xlab("Education Status") + ylab("Total of Females with Label 1") + labs(fill="label")  + ggtitle("Barplot of the Total Females with Label equals '1' per Education Status by Reason") + facet_wrap(~Reason)
+
+ggplot(females_label_0, aes(x = Education_Status)) +  stat_count(width = 0.5) + xlab("Education Status") + ylab("Total of Females with Label 0")  + ggtitle("Barplot of the Total Females with Label equals '0' per Education Status by Reason") + facet_wrap(~Reason)
+
+ggplot(males_label_1, aes(x = label, y = Amount)) + geom_boxplot() + ggtitle("Boxplot of the Amount per Label equal '1' by Males") + scale_y_continuous(limits = c(0,50)) 
+
+ggplot(males_label_0, aes(x = label, y = Amount)) + geom_boxplot() + ggtitle("Boxplot of the Amount per Label equal '0' by Males") + scale_y_continuous(limits = c(0,100)) 
+
+```
+
+##
+
+```{r}
+ggplot(males_label_1, aes(x = Education_Status)) +  stat_count(width = 0.5) + xlab("Education Status") + ylab("Total of Males with Label 1") + labs(fill="label")  + ggtitle("Barplot of the Total Male with Label equals '1' based on Education Status") + facet_wrap(~Reason)
+```
+##
+
+```{r}
+outlierKD <- function(dt, var) {
+  var_name <- eval(substitute(var),eval(dt))
+  tot <- sum(!is.na(var_name))
+  na1 <- sum(is.na(var_name))
+  m1 <- mean(var_name, na.rm = T)
+  par(mfrow=c(2, 2), oma=c(0,0,3,0))
+  boxplot(var_name, main="With outliers")
+  hist(var_name, main="With outliers", xlab=NA, ylab=NA)
+  outlier <- boxplot.stats(var_name)$out
+  mo <- mean(outlier)
+  var_name <- ifelse(var_name %in% outlier, NA, var_name)
+  boxplot(var_name, main="Without outliers")
+  hist(var_name, main="Without outliers", xlab=NA, ylab=NA)
+  title("Outlier Check", outer=TRUE)
+  na2 <- sum(is.na(var_name))
+  message("Outliers identified: ", na2 - na1, " from ", tot, " observations")
+  message("Proportion (%) of outliers: ", (na2 - na1) / tot*100)
+  message("Mean of the outliers: ", mo)
+  m2 <- mean(var_name, na.rm = T)
+  message("Mean without removing outliers: ", m1)
+  message("Mean if we remove outliers: ", m2)
+  response <- readline(prompt="Do you want to remove outliers and to replace with NA? [yes/no]: ")
+  if(response == "y" | response == "yes"){
+    dt[as.character(substitute(var))] <- invisible(var_name)
+    assign(as.character(as.list(match.call())$dt), dt, envir = .GlobalEnv)
+    message("Outliers successfully removed", "\n")
+    return(invisible(dt))
+  } else{
+    message("Nothing changed", "\n")
+    return(invisible(var_name))
+  }
+}
+
+dataset <- outlierKD(dataset, Age)
+```
+## Prediction Model 
+
+```{r}
+
+library(randomForest)
+library(caTools)
+
+str(dataset)
+dim(dataset)
+apply(dataset, 2, function(x) length(unique(x)))
+
+##set.seed(123)
+ind <- sample.split( Y = dataset$label, SplitRatio = 0.8)
+train_dataset <- dataset[ind,]
+test_dataset <- dataset[!ind,]
+train_dataset$Age <- na.roughfix(train_dataset$Age)
+train_dataset$Name <- NULL
+train_dataset$loan_ident <-NULL
+train_dataset <- na.omit(train_dataset)
+cleandata <- dataset[complete.cases(dataset),]
+
+
+train_dataset$Campaign <- NULL
+
+
+## Fitting the model 
+colSums(is.na(train_dataset))
+modelRandom <- randomForest(label~., data = train_dataset, importance=TRUE,proximity=TRUE, mtry = 3)
+modelRandom
+importance(modelRandom)
+varImpPlot(modelRandom, main = "Variables Importance")
+library(pROC)
+
+PredictionsWithProbs <- predict(modelRandom, test_dataset, type = 'prob')
+auc <- auc(test_dataset$label, PredictionsWithProbs[,2])
+plot(roc(test_dataset$label, PredictionsWithProbs[,2]), main = 'ROC Curve',ylab ='True positive rate' ,xlab = 'False positive rate')
+
+```
+
+## Prediction
+```{r}
+
+PredictionsWithClass <- predict(modelRandom, test_dataset, type = 'class')
+t <- table(predictions = PredictionsWithClass, actual = test_dataset$label)
+t
+
+## Accuracy metric
+
+sum(diag(t)/sum(t))
+
+
+
+```
