@@ -57,6 +57,9 @@ dataset$Name <- as.character(dataset$Name)
 dataset$No_Children <- as.factor(dataset$No_Children)
 dataset_no_na <- na.omit(dataset)
 dataset_with_na <- dataset[!complete.cases(dataset),]
+
+dataset[!complete.cases(dataset),]
+
 ```
 
 ## 
@@ -141,6 +144,12 @@ ggplot(males_label_1, aes(x = Education_Status)) +  stat_count(width = 0.5) + xl
 ##
 
 ```{r}
+library(ggplot2)
+ggplot(aes(x = Age, y = Amount, fill = factor(label)), data = dataset ) +
+  geom_point() + labs(fill="label") + ylim(c(0, 300))
+```
+
+```{r}
 outlierKD <- function(dt, var) {
   var_name <- eval(substitute(var),eval(dt))
   tot <- sum(!is.na(var_name))
@@ -203,10 +212,10 @@ train_dataset$Campaign <- NULL
 
 ## Fitting the model 
 colSums(is.na(train_dataset))
-modelRandom <- randomForest(label~., data = train_dataset, importance=TRUE,proximity=TRUE, mtry = 3)
+modelRandom <- randomForest(label~ Gender, data = train_dataset, importance=TRUE,proximity=TRUE)
 modelRandom
 importance(modelRandom)
-varImpPlot(modelRandom, main = "Variables Importance")
+
 library(pROC)
 
 PredictionsWithProbs <- predict(modelRandom, test_dataset, type = 'prob')
