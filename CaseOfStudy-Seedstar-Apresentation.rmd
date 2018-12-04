@@ -150,6 +150,7 @@ ggplot(aes(x = Age, y = Amount, fill = factor(label)), data = dataset ) +
 ```
 
 ```{r}
+# Function to detect outliers 
 outlierKD <- function(dt, var) {
   var_name <- eval(substitute(var),eval(dt))
   tot <- sum(!is.na(var_name))
