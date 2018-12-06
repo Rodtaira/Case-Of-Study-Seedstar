@@ -1,0 +1,88 @@
+---
+title: "Case Study for Seedstar"
+author: "Rodrigo Taira"
+date: "6 December 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+## Introduction 
+- This is a presentation of a task given as an assignment for the Seedstar Data Scientist Internship Position.
+- To implement this case, it was used R programming language as main tool for data analysis. 
+- Most part of the graphs were implemented using ggplot2 library. 
+
+## Problem Assignment and Questions
+
+- A dataset was provided by this link: https://docs.google.com/spreadsheets/d/1YT0-PTttD-k1y8KHXwfHm5rkfOucIj-eGLvSiFOCchY/edit#gid=0
+- In a brief view,  it can be perceived that the data provided is about loans status from customers.  
+- It was asked to analyze this dataset and create a model to predict the 'label' index. That has just two possible values either '0' and '1'.  
+- Some of the details that were very useful to get some insights were Education_Status, Gender, No_Children and Amount.
+- How the Label Status is distributed considering Education Status, Reason, Number of Children and etc? 
+
+## Acquire Data 
+
+- First step was to retrieve the data from the link with the gsheet library. 
+- After a quick look, I got the summary of the data to check all the data types.
+- It was organised the data types of each column and check which type suits better to the context for a better analysis of the data.
+
+```{r }
+library(gsheet)
+dataset <- gsheet2tbl('https://docs.google.com/spreadsheets/d/1YT0-PTttD-k1y8KHXwfHm5rkfOucIj-eGLvSiFOCchY/edit#gid=0')
+dataset$Education_Status <- as.factor(dataset$Education_Status)
+dataset$Amount <- as.numeric(dataset$Amount)
+dataset$Gender <- as.factor(dataset$Gender)
+dataset$Reason <- as.factor(dataset$Reason)
+dataset$label <- as.factor(dataset$label)
+dataset$Reason <- as.factor(dataset$Reason)
+dataset$referrals <- as.factor(dataset$referrals)
+dataset$Name <- as.character(dataset$Name)
+dataset$No_Children <- as.factor(dataset$No_Children)
+dataset_no_na <- na.omit(dataset)
+dataset_with_na <- dataset[!complete.cases(dataset),]
+
+dataset[!complete.cases(dataset),]
+
+```
+
+## 
+- Plot to check how the 'label' is distributed among the Customers. 
+
+```{r}
+
+barplot(table(dataset$label), xlab = "Label", ylab = "Total of Customers", main = "Barplot of the Total Customers per Label")
+```
+
+## Process of the data for analysis
+- The probability of label be '1' is higher for females with better education. 
+```{r}
+library(ggplot2)
+ggplot(dataset, aes(x = Education_Status, fill = factor(label))) + facet_wrap(~Gender) +  stat_count(width = 0.5) + xlab("Education Status") + ylab("Total of Customers") + labs(fill="label") + ggtitle('Barplot of the Total of Customers per Education Status by Gender')
+```
+
+##
+- The probability of label be '1' is higher for females with less or no Children. 
+
+```{r}
+ggplot(dataset, aes(x = No_Children, fill = label)) + geom_bar() + facet_wrap(~Gender) + xlab("Number of Children") + ylab("Total of Customers") + ggtitle('Barplot of the Total Customers per number of children by Gender')
+
+ggplot(dataset, aes(x = Reason, fill = label)) + geom_bar() + facet_wrap(~Gender) + xlab("Reason") + ylab("Total of Customers") + ggtitle('Barplot of the Total Customers per Reason by Gender')
+```
+
+## 
+- It is perceved that the median of the loan amount of the males with label equal '0' is almost 150
+```{r}
+
+ggplot(dataset, aes(x = label, y = Amount)) + geom_boxplot() + ggtitle("Boxplot of the Amount per Label Status by Gender") + facet_wrap(~Gender) + scale_y_continuous(limits = c(0,250)) 
+```
+## 
+
+```{r}
+library(ggplot2)
+ggplot(aes(x = Age, y = Amount, fill = factor(label)), data = dataset ) +
+  geom_point() + labs(fill="label") + ylim(c(0, 300)) + ggtitle("Amount per Age by Label")
+```

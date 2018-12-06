@@ -20,8 +20,6 @@ knitr::opts_chunk$set(echo = FALSE)
 - Exploration of the data
 - Prediction Model 
 - Results
-- Bibliography
-- Github of the Project 
 
 
 ## Introduction 
@@ -88,7 +86,7 @@ ggplot(dataset, aes(x = Reason, fill = label)) + geom_bar() + facet_wrap(~Gender
 
 ## 
 
-- It is perceveid that the median of the loan amount of the males with label equal '0' is almost 150
+- It is perceved that the median of the loan amount of the males with label equal '0' is almost 150
 ```{r}
 
 ggplot(dataset, aes(x = label, y = Amount)) + geom_boxplot() + ggtitle("Boxplot of the Amount per Label Status by Gender") + facet_wrap(~Gender) + scale_y_continuous(limits = c(0,250)) 
