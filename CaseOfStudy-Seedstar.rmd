@@ -46,7 +46,8 @@ dataset_no_na <- na.omit(dataset)
 dataset_with_na <- dataset[!complete.cases(dataset),]
 
 dataset[!complete.cases(dataset),]
-
+table(is.na(dataset))
+colSums(is.na(dataset))
 ```
 
 ## 
@@ -105,6 +106,7 @@ test_dataset <- dataset[!ind,]
 train_dataset$Age <- na.roughfix(train_dataset$Age)
 train_dataset$Name <- NULL
 train_dataset$loan_ident <-NULL
+train_dataset$Campaign <-NULL
 train_dataset <- na.omit(train_dataset)
 cleandata <- dataset[complete.cases(dataset),]
 
