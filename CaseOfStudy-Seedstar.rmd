@@ -61,7 +61,7 @@ barplot(table(dataset$label), xlab = "Label", ylab = "Total of Customers", main 
 ## Process of the data for analysis
 - The probability of label be '1' is higher for females with better education. 
 ```{r}
-library(ggplot2)
+library(tidyverse)
 ggplot(dataset, aes(x = Education_Status, fill = factor(label))) + facet_wrap(~Gender) +  stat_count(width = 0.5) + xlab("Education Status") + ylab("Total of Customers") + labs(fill="label") + ggtitle('Barplot of the Total of Customers per Education Status by Gender')
 ```
 
@@ -83,9 +83,10 @@ ggplot(dataset, aes(x = label, y = Amount)) + geom_boxplot() + ggtitle("Boxplot 
 ## 
 
 ```{r}
-library(ggplot2)
-ggplot(aes(x = Age, y = Amount, fill = label), data = dataset ) +
-  geom_point() + labs(fill="label") + ylim(c(0, 300)) + ggtitle("Amount per Age by Label")
+
+ggplot(data = dataset) + 
+  geom_point(mapping = aes(x = Age, y = Amount, color = label)) + ylim(c(0, 300)) + ggtitle("Amount per Age by Label")
+
 ```
 
 ## Prediction Model 
