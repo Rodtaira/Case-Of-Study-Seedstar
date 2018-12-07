@@ -83,6 +83,60 @@ ggplot(dataset, aes(x = label, y = Amount)) + geom_boxplot() + ggtitle("Boxplot 
 
 ```{r}
 library(ggplot2)
-ggplot(aes(x = Age, y = Amount, fill = factor(label)), data = dataset ) +
+ggplot(aes(x = Age, y = Amount, fill = label), data = dataset ) +
   geom_point() + labs(fill="label") + ylim(c(0, 300)) + ggtitle("Amount per Age by Label")
+```
+
+## Prediction Model 
+
+```{r}
+
+library(randomForest)
+library(caTools)
+
+str(dataset)
+dim(dataset)
+apply(dataset, 2, function(x) length(unique(x)))
+
+##set.seed(123)
+ind <- sample.split( Y = dataset$label, SplitRatio = 0.8)
+train_dataset <- dataset[ind,]
+test_dataset <- dataset[!ind,]
+train_dataset$Age <- na.roughfix(train_dataset$Age)
+train_dataset$Name <- NULL
+train_dataset$loan_ident <-NULL
+train_dataset <- na.omit(train_dataset)
+cleandata <- dataset[complete.cases(dataset),]
+
+
+train_dataset$Campaign <- NULL
+
+
+## Fitting the model 
+colSums(is.na(train_dataset))
+modelRandom <- randomForest(label~ Gender, data = train_dataset, importance=TRUE, proximity=TRUE)
+modelRandom
+importance(modelRandom)
+
+library(pROC)
+
+PredictionsWithProbs <- predict(modelRandom, test_dataset, type = 'prob')
+auc <- auc(test_dataset$label, PredictionsWithProbs[,2])
+plot(roc(test_dataset$label, PredictionsWithProbs[,2]), main = 'ROC Curve',ylab ='True positive rate' ,xlab = 'False positive rate')
+
+```
+
+## Prediction
+```{r}
+
+PredictionsWithClass <- predict(modelRandom, test_dataset, type = 'class')
+t <- table(predictions = PredictionsWithClass, actual = test_dataset$label)
+t
+
+## Accuracy metric
+
+sum(diag(t)/sum(t))
+
+
+
 ```
