@@ -85,7 +85,9 @@ ggplot(dataset, aes(x = label, y = Amount)) + geom_boxplot() + ggtitle("Boxplot 
 ```{r}
 
 ggplot(data = dataset) + 
-  geom_point(mapping = aes(x = Age, y = Amount, color = label)) + ylim(c(0, 300)) + ggtitle("Amount per Age by Label")
+  geom_point(mapping = aes(x = Age, y = Amount, color = label), alpha = 1/5) + ylim(c(0, 300)) + ggtitle("Amount per Age by Label") 
+
+
 
 ```
 
